@@ -15,7 +15,7 @@ from io import StringIO
 from os import path, makedirs
 import sys
 
-VERSION = "v1.2.0"
+VERSION = "v1.3.0"
 
 class CodeEditor(App):
     def build(self):
@@ -26,7 +26,6 @@ class CodeEditor(App):
         self.output_area = TextInput(readonly=True, multiline=True)
         self.execute_button = Button(text="Execute", on_press=self.execute_code)
         self.save_button = Button(text="Save", on_press=self.save_file)
-        self.title_button = Label(text="Your Custom Layout Here")
         self.settings_button = Button(text="Settings", on_press=self.open_settings_popup)
         self.input_area = TextInput(readonly=False, multiline=False)
         self.current_line_label = Label(text="Line: 1, Total Characters: 0", size_hint=(1, 0.1))
@@ -35,6 +34,7 @@ class CodeEditor(App):
         self.load_file_button = Button(text="Load File", on_press=self.load_file)
         top_bar_layout = BoxLayout(orientation="horizontal", size_hint=(1, 0.1))
         top_bar_layout.add_widget(self.save_button)
+        self.title_button = TextInput(hint_text="Enter file name here", multiline=False)
         top_bar_layout.add_widget(self.title_button)
         top_bar_layout.add_widget(self.settings_button)
         input_area_layout = BoxLayout(orientation="horizontal", size_hint=(1, 0.1))
@@ -70,6 +70,7 @@ class CodeEditor(App):
             with open(file_path, "r") as file:
                 file_contents = file.read()
                 self.text_input.text = file_contents
+                self.title_button.text = path.basename(file_path)
         except FileNotFoundError:
             print("File not found. Please check the file path.")
 
@@ -131,7 +132,10 @@ class CodeEditor(App):
         folder_path = path.join(desktop_path, "PyCode Studio Projects")
         if not path.exists(folder_path):
             makedirs(folder_path)
-        file_path = path.join(folder_path, "main.py")
+        file_name = self.title_button.text
+        if not file_name.endswith(".py"):
+            file_name += ".py"
+        file_path = path.join(folder_path, file_name)
         with open(file_path, "w") as file:
             file.write(self.text_input.text)
         print(f"File saved at: {file_path}")
