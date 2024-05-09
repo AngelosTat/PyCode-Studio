@@ -8,15 +8,17 @@ from threading import Thread
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.core.window import Window
+from kivy.uix.switch import Switch
 from io import StringIO
-from sys import stdout, stdin
 from os import path, makedirs
-
+from plyer import notification
+import sys
 
 class CodeEditor(App):
     def build(self):
+        self.notifications_enabled = False
         self.icon = "logo.png"
-        self.title = "PyCode Studio v1.0.0"
+        self.title = "PyCode Studio v1.1.0"
         self.text_input = TextInput(multiline=True)
         self.output_area = TextInput(readonly=True, multiline=True)
         self.execute_button = Button(text="Execute", on_press=self.execute_code)
@@ -45,13 +47,19 @@ class CodeEditor(App):
     def open_settings_popup(self, instance):
         popup_content = BoxLayout(orientation="vertical")
         close_button = Button(text="Close", on_press=self.close_settings_popup)
-        popup_content.add_widget(Label(text="COMING SOON"))
+        switch = Switch(active=self.notifications_enabled)
+        switch.bind(active=self.update_notifications_state)
+        popup_content.add_widget(Label(text="Settings"))
+        popup_content.add_widget(switch)
         popup_content.add_widget(close_button)
         window_width, window_height = Window.size
         popup_width = window_width / 1.25
         popup_height = window_height / 1.25
         self.settings_popup = Popup(title="Settings", content=popup_content, size_hint=(None, None), size=(popup_width, popup_height))
         self.settings_popup.open()
+
+    def update_notifications_state(self, instance, active):
+        self.notifications_enabled = active
 
     def close_settings_popup(self, instance):
         self.settings_popup.dismiss()
@@ -69,13 +77,20 @@ class CodeEditor(App):
         def execute():
             try:
                 stdout = StringIO()
-                stdin = StringIO(user_input)
+                sys.stdout = stdout
+                sys.stdin = StringIO(user_input)
+                
                 exec(code)
+                
                 output = stdout.getvalue()
+                
                 Clock.schedule_once(lambda dt: self.update_output(output))
             except Exception as e:
                 error_message = "Error: " + str(e)
                 Clock.schedule_once(lambda dt: self.update_output(error_message))
+                self.notify_error(error_message)
+            finally:
+                sys.stdout = sys.__stdout__
 
         Thread(target=execute).start()
 
@@ -101,6 +116,27 @@ class CodeEditor(App):
             return path.join(path.expanduser("~"), "Desktop")
         else:
             return path.expanduser("~")
+
+    def notify_error(self, error_message):
+        if self.notifications_enabled:
+            if platform == 'win':
+                notification.notify(
+                    title='Error',
+                    message=error_message,
+                    app_name='Katastro5 Python Editor'
+                )
+            elif platform == 'linux':
+                notification.notify(
+                    title='Error',
+                    message=error_message,
+                    app_name='Katastro5 Python Editor'
+                )
+            elif platform == 'macosx':
+                notification.notify(
+                    title='Error',
+                    message=error_message,
+                    app_name='Katastro5 Python Editor'
+                )
 
 if __name__ == "__main__":
     CodeEditor().run()
