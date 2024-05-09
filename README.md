@@ -12,6 +12,7 @@ PyCode Studio is a Python-based code editor designed to provide a simple yet eff
 - **Notifications**: Receive error notifications to enhance debugging capabilities.
 - **Enhanced Layout**: Improved the overall layout for better usability and visual appeal.
 - **Version Display**: Added the current version number to the title bar for clearer identification.
+- **Title Customization**: Allow users to specify the title of the file being edited.
 
 ## Requirements
 
